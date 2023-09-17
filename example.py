@@ -1,4 +1,4 @@
-from sms_spam_model import predict_spam
+from sms_spam_predict import predict_spam
 
 
 result = ["The following SMS is a SPAM", "The following SMS is normal"]
