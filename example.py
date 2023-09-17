@@ -1,3 +1,5 @@
+import time
+start = time.time()
 from sms_spam_predict import predict_spam
 
 
@@ -19,3 +21,6 @@ for msg in sample_sms:
         print(result[0])
     else:
         print(result[1])
+
+end = time.time()
+print("Runtime of the program is {} seconds".format(end - start))

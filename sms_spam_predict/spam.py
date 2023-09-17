@@ -1,3 +1,4 @@
+import os
 from sklearn.model_selection import train_test_split
 from sklearn.feature_extraction.text import CountVectorizer
 import pickle
@@ -12,7 +13,13 @@ import seaborn as sns
 import nltk
 from nltk.corpus import stopwords
 from nltk.stem.porter import PorterStemmer
-nltk.download('stopwords')
+
+nltk_data_dir = os.path.join(os.path.expanduser("~"), "nltk_data")
+
+# Check if stopwords data is available
+if not os.path.exists(nltk_data_dir):
+    print("Downloading NLTK data...")
+    nltk.download('stopwords', download_dir=nltk_data_dir)
 
 sms = pd.read_csv('spam.csv', sep='\t', names=['label', 'message'])
 sms.drop_duplicates(inplace=True)
@@ -32,22 +39,38 @@ for i in range(0, sms.shape[0]):
     message = ' '.join(words)  # Joining the stemmed words
     corpus.append(message)  # Building a corpus of messages
 
+
+# Check if the model file exists, if not, train and save the model
+model_file = './sms_spam_predict.pkl'
+current_dir = os.path.dirname(os.path.realpath(__file__))
+model_file = os.path.join(current_dir, model_file)
+
 cv = CountVectorizer(max_features=2500)
 X = cv.fit_transform(corpus).toarray()
 
-y = pd.get_dummies(sms['label'])
-y = y.iloc[:, 1].values
+if not os.path.exists(model_file):
 
-X_train, X_test, y_train, y_test = train_test_split(
-    X, y, test_size=0.20, random_state=0)
+    y = pd.get_dummies(sms['label'])
+    y = y.iloc[:, 1].values
 
-classifier = MultinomialNB(alpha=0.1)
-classifier.fit(X_train, y_train)
+    X_train, X_test, y_train, y_test = train_test_split(
+        X, y, test_size=0.20, random_state=0)
 
-y_pred = classifier.predict(X_test)
+    classifier = MultinomialNB(alpha=0.1)
+    classifier.fit(X_train, y_train)
 
-acc_s = accuracy_score(y_test, y_pred)*100
-print("Accuracy Score {} %".format(round(acc_s, 2)))
+    y_pred = classifier.predict(X_test)
+
+    acc_s = accuracy_score(y_test, y_pred)*100
+    print("Accuracy Score {} %".format(round(acc_s, 2)))
+
+    # Save the model
+    with open(model_file, 'wb') as model_file:
+        pickle.dump(classifier, model_file)
+else:
+    # Load the model
+    with open(model_file, 'rb') as model_file:
+        classifier = pickle.load(model_file)
 
 
 def predict_spam(sample_message):

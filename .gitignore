@@ -1,3 +1,14 @@
+# Environment
 sms_spam_detection
 
+# Cache
 __pycache__/
+
+# Byte-compiled / optimized / DLL files
+**/*.py[cod]
+**/*.pyc
+**/*.pyo
+**/*.pyd
+
+# Models
+*.pkl
